@@ -27,7 +27,7 @@ This extracts text from PDFs and image files (using tesseract), but does not OCR
     vi org/apache/tika/parser/pdf/PDFParser.properties # set extractInlineImages true
     jar cvfm ../tika-server-1.15-nb.jar META-INF/MANIFEST.MF .
     cd ..
-    java -jar ./tika-server-1.15-nb.jar
+    java -jar ./tika-server-1.15-nb.jar -Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider
     curl -T some.pdf http://localhost:9998/rmeta/text | jq . > some.json
     
 So the XML config is still not working with this version.
