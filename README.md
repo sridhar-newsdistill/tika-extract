@@ -1,10 +1,10 @@
 # tika-extract
 
 ## Description
-Using Apache tika to extract text and meta-data from many types of docs and load into Elasticsearch. Just some doco and scripting.
+Using Apache Tika to extract text and meta-data from many types of docs and load into Elasticsearch. Just some doco and scripting.
 
-## Apache tika
-Out-of-the-box tika doesn't OCR images embedded in PDFs. First install OCR and JSON processor:
+## Apache Tika
+Out-of-the-box Tika doesn't OCR images embedded in PDFs. First install OCR and JSON processor:
 
     sudo apt-get install tesseract-ocr jq
 
