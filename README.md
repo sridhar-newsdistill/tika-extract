@@ -1,9 +1,9 @@
 # tika-extract
 
 ## Description
-Using Apache tika to extract text and meta-data from many types of docs. Just some doco and scripting.
+Using Apache tika to extract text and meta-data from many types of docs and load into Elasticsearch. Just some doco and scripting.
 
-## Setup
+## Apache tika
 Out-of-the-box tika doesn't OCR images embedded in PDFs. First install OCR and JSON processor:
 
     sudo apt-get install tesseract-ocr jq
@@ -39,9 +39,17 @@ Tika uses these comands while processing a PDF with an embedded image:
 
 The image processing with `convert` appears to produce better OCR than using the original image.
 
+## Elasticsearch
+
+deb package install [instructions](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/deb.html),
+includes how to start/stop, a test URL and where to find config/logs/data etc.
+To avoid different instances on your network inadvertantly forming a cluster, set a unique `cluster.name` before starting:
+
+    sudo vi /etc/elasticsearch/elasticsearch.yml  # set cluster.name: unusualClusterName
+
 ## Scripting
 The [extract.js](extract.js) nodejs script reads file paths from stdin, HTTP PUTs the file content to tika and post processes the output to be suitable
-to load into [Elasticsearch's bulk API](https://www.elastic.co/guide/en/elasticsearch/guide/current/bulk.html).
+to load into Elasticsearch's [bulk API](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/docs-bulk.html).
 
 Install [node & npm](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions) (note the Ubuntu packaged versions are very old).
 

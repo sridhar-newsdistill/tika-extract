@@ -5,6 +5,10 @@ const request = require('request');
 // whether to write meta-data for Elasticsearch bulk indexing
 var isBulk = process.argv.length > 2 && process.argv[2] == 'bulk'
 
+// keys to exclude from meta: content and large uninteresting items
+var notMeta = new Set(['X-TIKA:content', 'Chroma Palette PaletteEntry', 'LocalColorTable ColorTableEntry',
+                    'Strip Byte Counts', 'Strip Offsets', 'X-TIKA:EXCEPTION:embedded_exception']);
+
 // process 1st path in paths then call recursively with 1st item removed to do the rest
 function extract(paths) {
   if (paths.length == 0) return;
@@ -15,11 +19,10 @@ function extract(paths) {
     if (err || resp.statusCode != 200) {
       process.stderr.write(`extract error: path: ${path}, err: ${err}, statusCode: ${resp.statusCode}\n`);
     } else {
-      var arr = JSON.parse(body);
-      
-      // delete a few uninteresting properties that can be large
-      var zapme = ['Chroma Palette PaletteEntry', 'LocalColorTable ColorTableEntry', 'Strip Byte Counts', 'Strip Offsets', 'X-TIKA:EXCEPTION:embedded_exception'];
-      arr.forEach(a => zapme.forEach(z => delete a[z]));
+      var arr = JSON.parse(body).map(a => ({
+        content: a['X-TIKA:content'], 
+        meta: Object.keys(a).filter(k => !notMeta.has(k)).map(k => ({ key: k, val: a[k]}))
+      }));
       
       var obj = arr[0];
       obj['path'] = path;
