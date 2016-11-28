@@ -27,7 +27,7 @@ This extracts text from PDFs and image files (using tesseract), but does not OCR
     vi org/apache/tika/parser/pdf/PDFParser.properties # set extractInlineImages true
     jar cvfm ../tika-server-1.15-nb.jar META-INF/MANIFEST.MF .
     cd ..
-    java -jar ./tika-server-1.15-nb.jar -Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider
+    java -jar ./tika-server-1.15-nb.jar
     curl -T some.pdf http://localhost:9998/rmeta/text | jq . > some.json
     
 So the XML config is still not working with this version.
@@ -38,6 +38,12 @@ Tika uses these comands while processing a PDF with an embedded image:
     tesseract /tmp/apache-tika-744996606371035197.tmp /tmp/apache-tika-2435919404079555622.tmp -l eng -psm 1 txt
 
 The image processing with `convert` appears to produce better OCR than using the original image.
+
+To OCR tiff and jpeg2000 images embedded in PDF:
+
+    wget http://repo1.maven.org/maven2/com/github/jai-imageio/jai-imageio-core/1.3.1/jai-imageio-core-1.3.1.jar
+    wget http://repo1.maven.org/maven2/com/github/jai-imageio/jai-imageio-jpeg2000/1.3.0/jai-imageio-jpeg2000-1.3.0.jar
+    java -classpath ./jai-imageio-core-1.3.1.jar:./jai-imageio-jpeg2000-1.3.0.jar -Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider -jar ./tika-server-1.15-nb.jar 
 
 ## Elasticsearch
 
