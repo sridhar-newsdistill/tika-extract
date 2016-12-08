@@ -1,0 +1,19 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /var/www/html;
+    index index.html;
+    server_name _;
+
+    # serve elasticsearch with CORS header on port 80 path /es 
+    location /es {
+	proxy_pass http://localhost:9200/atopp;
+	add_header Access-Control-Allow-Headers 'Content-Type';
+    }
+
+    location / {
+	# First attempt to serve request as file, then
+	# as directory, then fall back to displaying a 404.
+	try_files $uri $uri/ =404;
+    }
+}

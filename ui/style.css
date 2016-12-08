@@ -1,0 +1,68 @@
+body {
+  font-family: verdana, helvetica, arial, sans-serif;
+  font-size: 14px;
+  color: #404040;
+}
+
+h1, h2, h3, h4 {
+  color: #98bf21;
+}
+
+.label, label {
+  color: #98bf21;
+  font-weight: bold;
+}
+
+.error {
+  color: red;
+  margin-top: 15px;
+  font-family: monospace;
+  white-space: pre;
+}
+
+button {
+  color: white;
+  background-color: #98bf21;
+  border: 1px outset #98bf21;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+table {
+  border: 1px solid #98bf21;
+  border-collapse: collapse;
+}
+
+tr:nth-child(odd) {
+  background: #EAF2D3;
+}
+
+th {
+  text-align: left;
+  padding: 3px 3px 3px 3px;
+  background-color: #A7C942;
+  color: white;
+}
+
+td {
+  vertical-align: top;
+  border: 1px solid #98bf21;
+  padding: 2px 5px 2px 5px;
+}
+
+#query {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#searchResult {
+  margin-top: 10px;
+}
+
+.stats {
+  margin-bottom: 5px;
+}
+
+.content {
+  white-space: pre;
+}

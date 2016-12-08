@@ -20,7 +20,7 @@ if [[ "$1" == "firstrun" ]]; then
   # file paths to process on stdin
   # write (at most) bunchSize file paths to each todo/bunch-* file
   cd todo
-  split --suffix-length=8 --numeric-suffixes --lines=${bunchSize} - bunch-
+  split --suffix-length=3 --numeric-suffixes --lines=${bunchSize} - bunch-
   cd ..
 else
   mv inprogress/bunch-* todo || {
@@ -41,8 +41,8 @@ function onethread() {
       # otherwise some other subprocess beat us to it
       while read filepath; do
         echo "$filepath ..." >&2
-        # curl --silent --show-error --upload-file $filepath $url
-        echo "testing $filepath"
+        curl --silent --show-error --upload-file "$filepath" $url | node transform.js "$filepath"
+        # echo "testing $filepath"
       done < $inprogFile > ${doneFile}.json 2> ${doneFile}.err
       # move from inprogress to done to indicate completion
       mv ${inprogFile} ${doneFile}
