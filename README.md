@@ -97,14 +97,17 @@ Without the `firstrun` parameter it continues a previous run by moving `inprogre
 
 ## Elasticsearch
 
+To avoid different instances on your network inadvertantly forming a cluster, set a unique `cluster.name` before starting.
+
 ### Using deb package (need admin rights to access logs etc.)
 deb package install [instructions](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/deb.html),
 includes how to start/stop, a test URL and where to find config/logs/data etc.
-To avoid different instances on your network inadvertantly forming a cluster, set a unique `cluster.name` before starting:
 
     sudo vi /etc/elasticsearch/elasticsearch.yml  # set cluster.name: unusualClusterName
 
 ### Using tarball
+
+Download and extract the tarball from: https://www.elastic.co/downloads/elasticsearch
 
     # configure
     vi elasticsearch-5.0.2/config/elasticsearch.yml  # set cluster.name: unusualClusterName
