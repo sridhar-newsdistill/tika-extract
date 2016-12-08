@@ -107,7 +107,7 @@ To avoid different instances on your network inadvertantly forming a cluster, se
 ### Using tarball
 
     # configure
-    elasticsearch-5.0.2/config/elasticsearch.yml
+    vi elasticsearch-5.0.2/config/elasticsearch.yml  # set cluster.name: unusualClusterName
     
     # run
     ./elasticsearch-5.0.2/bin/elasticsearch >& elasticsearch.log &
