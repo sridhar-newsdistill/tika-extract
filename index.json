@@ -10,7 +10,11 @@
     "atopp" : {
       "_all": { "enabled": false },
       "properties" : {
-        "content" : { "type" : "text" },
+        "content" : {
+          "type" : "text",
+          "analyzer": "english",
+          "index_options": "offsets"
+        },
         "meta" : {
           "type": "nested",
           "properties" : {
@@ -21,7 +25,11 @@
         "path" : { "type" : "text" },
         "embedded" : {
           "properties" : {
-            "content" : { "type" : "text" },
+            "content" : {
+              "type" : "text",
+              "analyzer": "english",
+              "index_options": "offsets"
+            },
             "meta" : {
               "type": "nested",
               "properties" : {

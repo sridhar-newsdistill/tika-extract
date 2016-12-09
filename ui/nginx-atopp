@@ -6,8 +6,8 @@ server {
     server_name _;
 
     # serve elasticsearch with CORS header on port 80 path /es 
-    location /es {
-	proxy_pass http://localhost:9200/atopp;
+    location /search {
+	proxy_pass http://localhost:9200/atopp/atopp/_search;
 	add_header Access-Control-Allow-Headers 'Content-Type';
     }
 
