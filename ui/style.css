@@ -82,3 +82,12 @@ td {
   font-weight: bold;
   white-space: pre;
 }
+
+.text {
+  margin-left: 5px;
+}
+
+.meta {
+  margin-left: 25px;
+}
+

@@ -128,9 +128,24 @@ var scoreColHandler = v => v === "NaN" ? "" : v.toPrecision(4);
  * Search
  */
 
+function createDocDetails() {
+  var textMeta = () => [
+    $('<a>').attr({class: 'text', href: '#'}).text('text'),
+    $('<a>').attr({class: 'meta', href: '#'}).text('meta')
+  ];
+  return [
+    $('<div>').addClass('mainDoc').append(textMeta()),
+    $('<div>').addClass('embeddedDoc').append('+-', textMeta()),
+    $('<div>').addClass('embeddedDoc').append('+-', textMeta())
+  ];
+}
+
 function pathColHandler(v) {
   var name = v.substring(fileBase.length);
-  return $('<a>').attr({ class: 'doc', href: `${docUrlBase}/${name}`, target: '_blank'}).text(name);
+  return [
+    $('<a>').attr({ class: 'doc', href: `${docUrlBase}/${name}`, target: '_blank'}).text(name),
+    createDocDetails()
+  ];
 }
 
 var trim = t => isDefined(t) ? $('<span>').addClass('snippet').append(t.trim().replace(/(?:\n *){3,}/g, '\n\n')) : "";
