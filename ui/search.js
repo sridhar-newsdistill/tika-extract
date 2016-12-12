@@ -82,18 +82,10 @@ function doAjax(url, data, success, error, method, contentType, dataType) {
  */
 function genTable(data, cols) {
   var t = $('<table>');
-  var tr = $('<tr>');
   // column headers from 'labels'
-  t.append(tr);
-  for (var i = 0; i < cols.length; i++) {
-    var col = cols[i];
-    tr.append($('<th>').addClass(col.tdClass).text(cols[i].label));
-  }
-  // make a row from each element in 'data'
-  // 'fields' gives the properties to use and their order
-  $.each(data, function(index, x) {
-    t.append(genRow(x, cols));
-  });
+  t.append($('<tr>').append(cols.map(col => $('<th>').addClass(col.tdClass).text(col.label))));
+  // make a row from each element in 'data', 'cols' gives the properties to use and their order
+  t.append(data.map(x => genRow(x, cols)));
   return t;
 }
 
@@ -104,12 +96,7 @@ function getField(x, field) {
 }
 
 function genRow(x, cols) {
-  var tr = $('<tr>');
-  for (var i = 0; i < cols.length; i++) {
-    var col = cols[i];
-    tr.append($('<td>').addClass(col.tdClass).append(col.handler(getField(x, col.field))));
-  }
-  return tr;
+  return $('<tr>').append(cols.map(col => $('<td>').addClass(col.tdClass).append(col.handler(getField(x, col.field)))));
 }
 
 // what genTable needs to know for each column
@@ -128,36 +115,33 @@ var scoreColHandler = v => v === "NaN" ? "" : v.toPrecision(4);
  * Search
  */
 
-function createDocDetails() {
-  var textMeta = () => [
-    $('<a>').attr({class: 'text', href: '#'}).text('text'),
-    $('<a>').attr({class: 'meta', href: '#'}).text('meta')
-  ];
-  return [
-    $('<div>').addClass('mainDoc').append(textMeta()),
-    $('<div>').addClass('embeddedDoc').append('+-', textMeta()),
-    $('<div>').addClass('embeddedDoc').append('+-', textMeta())
-  ];
-}
-
-function pathColHandler(v) {
-  var name = v.substring(fileBase.length);
-  return [
+function pathColHandler(src) {
+  var textMeta = (content, meta) => [
+    $('<a>').attr({class: 'text', href: '#'}).text('text').data('content', content),
+    $('<a>').attr({class: 'meta', href: '#'}).text('meta').data('meta', meta)
+    ];
+  var name = src.path.substring(fileBase.length);
+  var arr = src.embedded
+    ? src.embedded.map(e => $('<div>').addClass('embeddedDoc').append($('<span>').text('+-'), textMeta(e.content, e.meta)))
+    : [];
+  arr.unshift($('<div>').addClass('mainDoc').append(
     $('<a>').attr({ class: 'doc', href: `${docUrlBase}/${name}`, target: '_blank'}).text(name),
-    createDocDetails()
-  ];
+    textMeta(src.content, src.meta)
+  ));
+  return arr;
 }
 
-var trim = t => isDefined(t) ? $('<span>').addClass('snippet').append(t.trim().replace(/(?:\n *){3,}/g, '\n\n')) : "";
-var highlightContent = arr => isDefined(arr) ? arr.map(v => trim(v)) : [];
+var trim = t => isDefined(t) ? t.trim().replace(/(?:\n *){3,}/g, '\n\n') : "";
+var textContent = t => $('<span>').addClass('snippet').append(trim(t));
+var highlightContent = arr => isDefined(arr) ? arr.map(v => textContent(v)) : [];
   
 var contentColHandler = x => isDefined(getField(x, ['highlight', 'content']))
   ? highlightContent(x.highlight.content)
-  : trim(getField(x, ['_source', 'content']));
+  : textContent(getField(x, ['_source', 'content']));
 
 var embeddedColHandler = x => isDefined(getField(x, ['highlight', 'embedded.content']))
   ? highlightContent(x.highlight['embedded.content'])
-  : trim(getField(x, ['_source', 'embedded', 'content']));
+  : textContent(getField(x, ['_source', 'embedded', 'content']));
 
 function createSearchForm() {
   debug('createSearchForm');
@@ -204,7 +188,7 @@ function pages(size, from, totalHits, searchFrom) {
 
 var searchResultCols = [
   new Col('Score', ['_score'], scoreColHandler),
-  new Col('Document', ['_source', 'path'], pathColHandler),
+  new Col('Document', ['_source'], pathColHandler),
   new Col('Content', [], contentColHandler),
   new Col('Embedded', [], embeddedColHandler)
 ];
@@ -230,13 +214,21 @@ function search(q, elem, size, from) {
   doAjax(
     url, 
     JSON.stringify(qry),
-    data => elem.empty().append(
-      $('<div>').addClass('summary').append(
-        pages(size, from, data.hits.total, frm => search(q, elem, size, frm)),
-        $('<span>').addClass('stats').text(`${data.hits.total.toLocaleString()} hits in ${(data.took * 0.001).toFixed(3)} sec`)
-      ),
-      genTable(data.hits.hits, searchResultCols)
-    ),
+    data => {
+      elem.empty().append(
+        $('<div>').addClass('summary').append(
+          pages(size, from, data.hits.total, frm => search(q, elem, size, frm)),
+          $('<span>').addClass('stats').text(`${data.hits.total.toLocaleString()} hits in ${(data.took * 0.001).toFixed(3)} sec`)
+        ),
+        genTable(data.hits.hits, searchResultCols)
+      );
+      elem.tooltip({ items: 'a.text, a.meta', content: function() {
+        var e = $(this); // `this` doesn't work in a lambda
+        return e.hasClass('text')
+          ? $('<div>').addClass('contentPopup').text(trim(e.data('content'))) 
+          : $('<div>').addClass('metaPopup').append(genTable(e.data('meta'), [new Col('Key', ['key']), new Col('Value', ['val'])]));
+      }});
+    },
     msg => error(elem, msg)
   );
 }

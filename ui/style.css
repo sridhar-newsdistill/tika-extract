@@ -83,11 +83,23 @@ td {
   white-space: pre;
 }
 
-.text {
+.mainDoc > a.doc {
+  display: block;
+}
+
+.embeddedDoc > .text {
   margin-left: 5px;
 }
 
 .meta {
-  margin-left: 25px;
+  margin-left: 10px;
+}
+
+.ui-tooltip {
+  max-width: 700px;
+}
+
+.contentPopup {
+  white-space: pre;
 }
 
