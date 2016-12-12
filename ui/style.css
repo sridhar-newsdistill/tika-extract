@@ -1,9 +1,3 @@
-body {
-  font-family: verdana, helvetica, arial, sans-serif;
-  font-size: 14px;
-  color: #404040;
-}
-
 h1, h2, h3, h4 {
   color: #98bf21;
 }
@@ -83,6 +77,10 @@ td {
   white-space: pre;
 }
 
+.initialContent {
+  white-space: pre;
+}
+
 .mainDoc > a.doc {
   display: block;
 }
@@ -101,5 +99,10 @@ td {
 
 .contentPopup {
   white-space: pre;
+  overflow: scroll;
+}
+
+.metaPopup {
+  overflow: scroll;
 }
 

@@ -38,7 +38,7 @@ function debug() {
 
 function error(elem, msg) {
   console.log('error: msg =', msg);
-  elem.append($('<div>').addClass('error').text(msg));
+  elem.empty().append($('<div>').addClass('error').text(msg));
 }
 
 function doAjax(url, data, success, error, method, contentType, dataType) {
@@ -132,8 +132,8 @@ function pathColHandler(src) {
 }
 
 var trim = t => isDefined(t) ? t.trim().replace(/(?:\n *){3,}/g, '\n\n') : "";
-var textContent = t => $('<span>').addClass('snippet').append(trim(t));
-var highlightContent = arr => isDefined(arr) ? arr.map(v => textContent(v)) : [];
+var textContent = t => $('<span>').addClass('initialContent').append(trim(t));
+var highlightContent = arr => isDefined(arr) ? arr.map(t => $('<span>').addClass('snippet').append(trim(t))) : [];
   
 var contentColHandler = x => isDefined(getField(x, ['highlight', 'content']))
   ? highlightContent(x.highlight.content)
@@ -173,9 +173,9 @@ function pages(size, from, totalHits, searchFrom) {
   var txt = t => $('<span>').addClass('page').text(t);
   var link = t => $('<a>').attr({href: t, class: 'page'}).text(t);
   var d = $('<span>').addClass('pages').text('Pages:');
-  d.append($.map(pages, (val, idx) => {
+  d.append(pages.flatMap((val, idx) => {
     var e = val == page ? txt(val) : link(val);
-    return idx > 0 && val > pages[idx - 1] + 1 ? [ txt('...'), e ] : e;
+    return idx > 0 && val > pages[idx - 1] + 1 ? [ txt('...'), e ] : [ e ];
   }));
   $('a', d).on('click', function(ev) {
     // debug('pages click: ev', ev);
@@ -222,12 +222,19 @@ function search(q, elem, size, from) {
         ),
         genTable(data.hits.hits, searchResultCols)
       );
-      elem.tooltip({ items: 'a.text, a.meta', content: function() {
-        var e = $(this); // `this` doesn't work in a lambda
-        return e.hasClass('text')
-          ? $('<div>').addClass('contentPopup').text(trim(e.data('content'))) 
-          : $('<div>').addClass('metaPopup').append(genTable(e.data('meta'), [new Col('Key', ['key']), new Col('Value', ['val'])]));
-      }});
+      var modal = $('#myModal');
+      $('a.text', elem).on('click', ev => {
+        $('.modal-title', modal).text('Text Content');
+        $('.modal-body', modal).empty().append($('<div>').addClass('contentPopup').text(trim($(ev.target).data('content'))));
+        modal.modal('show');
+      });
+      $('a.meta', elem).on('click', ev => {
+        $('.modal-title', modal).text('Meta-data');
+        $('.modal-body', modal).empty().append($('<div>').addClass('metaPopup').append(
+          genTable($(ev.target).data('meta'), [new Col('Key', ['key']), new Col('Value', ['val'])])
+        ));
+        modal.modal('show');
+      });
     },
     msg => error(elem, msg)
   );
