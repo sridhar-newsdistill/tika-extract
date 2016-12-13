@@ -150,7 +150,7 @@ function createSearchForm() {
   var searchForm = $('<div>').attr('id', 'searchForm').append($('<form>').append(
     $('<label>').attr({for: 'query'}).text('query'),
     q,
-    $('<button>').attr({type: 'button'}).text('Search').click(ev => search(q.val(), searchResult, 2, 0))
+    $('<button>').attr({type: 'button'}).text('Search').click(ev => search(q.val(), searchResult, 10, 0))
   ));
   return [ $('<h1>').text('Search'), searchForm, searchResult ];
 }
