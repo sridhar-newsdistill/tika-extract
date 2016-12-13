@@ -47,13 +47,22 @@ object Main extends ServerApp {
   object CoreNLP {
     import edu.stanford.nlp.simple._
     import scala.collection.JavaConversions.asScalaBuffer
-
+    
+    case class Ner2(ner: String, typ: String, sIdx: Int, wIdx: Int)
+    
     def ner(text: String) = {
-      (for {
+      val x = for {
         (s, sIdx) <- new Document(text).sentences.zipWithIndex
-        _ = log.debug(s"s = $s")
         (t, wIdx) <- s.nerTags.zipWithIndex if t != "O"
-      } yield Ner(s.word(wIdx), t)).toList
+      } yield Ner2(s.word(wIdx), t, sIdx, wIdx)
+      // "New York" gives us a "LOCATION" entry for "New" and another for "York" - merge into a "New York" entry
+      x += Ner2("dummy", "O", -1, -1)
+      x.foldLeft((List.empty[Ner], None:  Option[Ner2])) {
+        case ((lst, None), n2) => (lst, Some(n2))
+        case ((lst, Some(p)), n2) =>
+          if (p.typ == n2.typ && p.sIdx == n2.sIdx && p.wIdx + 1 == n2.wIdx) (lst, Some(Ner2(s"${p.ner} ${n2.ner}", p.typ, p.sIdx, n2.wIdx)))
+          else (lst :+ Ner(p.ner, p.typ), Some(n2))
+      }._1
     }
   }
 
