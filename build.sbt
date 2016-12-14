@@ -60,10 +60,13 @@ lazy val root = project.in(file(".")).
 	name := "tika-extract",
 	libraryDependencies ++= Seq(
 	  "http4s-dsl",
-	  "http4s-blaze-server"
-        ).map("org.http4s" %% _ % "0.15.0a"),
+	  "http4s-blaze-server",
+	  "http4s-argonaut"
+	  // "http4s-circe"
+	  // "http4s-json4s-native"
+    ).map("org.http4s" %% _ % "0.15.0a"),
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-argonaut" % "0.15.0a",
+      // "io.circe" %% "circe-generic" % "0.4.1",
       "com.optimaize.languagedetector" % "language-detector" % "0.6",
       "edu.stanford.nlp" % "stanford-corenlp" % "3.6.0",
       "edu.stanford.nlp" % "stanford-corenlp" % "3.6.0" classifier "models" classifier "models-spanish",
