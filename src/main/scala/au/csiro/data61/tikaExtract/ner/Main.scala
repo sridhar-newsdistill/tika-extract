@@ -76,7 +76,7 @@ object Main extends ServerApp {
     }
   }
   
-  def langNer(d: DocIn) = {
+  def langNer(d: DocIn): DocOut = {
     val lang = d.content.flatMap { c => LangDetect.lang(c) }
     val meta = lang.toList.flatMap { l => List(Meta("language", l.lang), Meta("languageProbability", l.prob.toString)) } ++ d.meta
     val ner = d.content.toList.flatMap(c => CoreNLP.ner(c))
@@ -88,17 +88,29 @@ object Main extends ServerApp {
     } }
     DocOut(d.content, meta, d.path, ner, embedded)
   }
+  
+  def langNerMultiLine(in: String): String = {
+    in.split("\n").toList.map { line =>
+      if (line.contains("_index")) line
+      else {
+        line.decodeOption[DocIn].map(langNer(_).asJson.nospaces).get
+      }
+    }.mkString("\n")
+  }
 
   val nerService = CORS.apply(HttpService {
     case r @ POST -> Root / "lang" =>
-      r.as(jsonOf[Text]).flatMap(t => Ok(LangDetect.lang(t.text).asJson)
-    )
+      r.as(jsonOf[Text]).flatMap { t => Ok(LangDetect.lang(t.text).asJson) }
     case r @ POST -> Root / "ner" =>
-      r.as(jsonOf[Text]).flatMap(t => Ok(CoreNLP.ner(t.text).asJson)
-    )
+      r.as(jsonOf[Text]).flatMap { t => Ok(CoreNLP.ner(t.text).asJson) }
     case r @ POST -> Root / "langNer" =>
-      r.as(jsonOf[DocIn]).flatMap(d => Ok(langNer(d).asJson)
-    )
+      r.as(jsonOf[DocIn]).flatMap { d => Ok(langNer(d).asJson) }
+    case r @ POST -> Root / "langNerMultiLine" =>
+      Ok(r.body.map { bv =>
+        val in = bv.decodeUtf8.right.get
+        val out = langNerMultiLine(in)
+        out
+      })
   })
 
   override def server(args: List[String]): Task[Server] = {

@@ -13,13 +13,20 @@ import argonaut.CodecJson
 class JsonTest extends FlatSpec with Matchers {
   val log = Logger(getClass)
   
-  "DocIn" should "De/serialize" in {
-    val d = DocIn(Some("content"), List(Meta("key1", "val1"), Meta("key2", "val2")), "path", Some(List(
-      EmbeddedIn(None, List(Meta("key3", "val3"), Meta("key4", "val4"))), 
-      EmbeddedIn(Some("embedded content2"), List(Meta("key5", "val5"), Meta("key6", "val6")))
-    )))
-    log.debug(s"json = ${d.asJson}")
-    
+  val docIn = DocIn(Some("content"), List(Meta("key1", "val1"), Meta("key2", "val2")), "path", Some(List(
+    EmbeddedIn(None, List(Meta("key3", "val3"), Meta("key4", "val4"))), 
+    EmbeddedIn(Some("embedded content2"), List(Meta("key5", "val5"), Meta("key6", "val6")))
+  )))
+  
+  "DocIn" should "ser/deserialize" in {
+    val json = docIn.asJson.nospaces
+    log.debug(s"json = $json")
+    val d2 = json.decodeOption[DocIn]
+    d2.get should be(docIn)
+  }
+  
+  it should "deserialize real output from tika parser" in {
+    // content and embedded are optional, path and meta are not
     val json = List(
       """{
         "path": "path",
@@ -421,7 +428,22 @@ class JsonTest extends FlatSpec with Matchers {
 }
 """
       )
-    for (j <- json) log.debug(s"docIn = ${j.decodeEither[DocIn]}")
+    for (j <- json) {
+      val d = j.decodeOption[DocIn]
+      d.isDefined should be(true)
+      // log.debug(s"docIn = ${}")
+    }
+  }
+  
+  "Multi-line input" should "work" in {
+    val json = docIn.asJson.nospaces
+    val in = s"""junk
+$json
+junk
+$json"""
+    val x = in.split("\n").toList.filter(_.contains("meta")).flatMap(_.decodeOption[DocIn])
+    x.size should be(2)
+    for (d2 <- x) d2 should be(docIn)
   }
   
 }
