@@ -13,9 +13,9 @@ import argonaut.CodecJson
 class JsonTest extends FlatSpec with Matchers {
   val log = Logger(getClass)
   
-  val docIn = DocIn(Some("content"), List(Meta("key1", "val1"), Meta("key2", "val2")), "path", Some(List(
-    EmbeddedIn(None, List(Meta("key3", "val3"), Meta("key4", "val4"))), 
-    EmbeddedIn(Some("embedded content2"), List(Meta("key5", "val5"), Meta("key6", "val6")))
+  val docIn = DocIn(Some("content"), Some(List(Meta("key1", "val1"), Meta("key2", "val2"))), "path", Some(List(
+    EmbeddedIn(None, Some(List(Meta("key3", "val3"), Meta("key4", "val4")))), 
+    EmbeddedIn(Some("embedded content2"), Some(List(Meta("key5", "val5"), Meta("key6", "val6"))))
   )))
   
   "DocIn" should "ser/deserialize" in {

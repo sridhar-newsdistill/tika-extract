@@ -23,11 +23,11 @@ object Main extends ServerApp {
   case class Ner(typ: String, entity: String, sentenceIdx: Int, wordIdxFirst: Int, wordIdxLast: Int)
   
   case class Meta(key: String, `val`: String)
-  case class EmbeddedIn(content: Option[String], meta: List[Meta])
-  case class DocIn(content: Option[String], meta: List[Meta], path: String, embedded: Option[List[EmbeddedIn]])
+  case class EmbeddedIn(content: Option[String], meta: Option[List[Meta]])
+  case class DocIn(content: Option[String], meta: Option[List[Meta]], path: String, embedded: Option[List[EmbeddedIn]])
   
-  case class EmbeddedOut(content: Option[String], meta: List[Meta], ner: List[Ner])
-  case class DocOut(content: Option[String], meta: List[Meta], path: String, ner: List[Ner], embedded: Option[List[EmbeddedOut]])
+  case class EmbeddedOut(content: Option[String], meta: Option[List[Meta]], ner: List[Ner])
+  case class DocOut(content: Option[String], meta: Option[List[Meta]], path: String, ner: List[Ner], embedded: Option[List[EmbeddedOut]])
 
   implicit val textCodec: CodecJson[Text] = casecodec1(Text.apply, Text.unapply)("text")
   implicit val langCodec: CodecJson[Lang] = casecodec2(Lang.apply, Lang.unapply)("lang", "prob")
@@ -76,14 +76,19 @@ object Main extends ServerApp {
     }
   }
   
+  def updateMeta(meta: Option[List[Meta]], lang: Option[Lang]): Option[List[Meta]] =
+    lang.map { l => 
+      Meta("language", l.lang) +: Meta("languageProbability", l.prob.toString) +: meta.getOrElse(Nil)
+    }.orElse(meta)
+  
   def langNer(d: DocIn): DocOut = {
     val lang = d.content.flatMap { c => LangDetect.lang(c) }
-    val meta = lang.toList.flatMap { l => List(Meta("language", l.lang), Meta("languageProbability", l.prob.toString)) } ++ d.meta
-    val ner = d.content.toList.flatMap(c => CoreNLP.ner(c))
+    val meta = updateMeta(d.meta, lang)
+    val ner = d.content.map(c => CoreNLP.ner(c)).getOrElse(Nil)
     val embedded = d.embedded.map { _.map { e =>
       val lang = e.content.flatMap { c => LangDetect.lang(c) }
-      val meta = lang.toList.flatMap { l => List(Meta("language", l.lang), Meta("languageProbability", l.prob.toString)) } ++ e.meta
-      val ner = e.content.toList.flatMap(c => CoreNLP.ner(c))
+      val meta = updateMeta(e.meta, lang)
+      val ner = e.content.map(c => CoreNLP.ner(c)).getOrElse(Nil)
       EmbeddedOut(e.content, meta, ner)
     } }
     DocOut(d.content, meta, d.path, ner, embedded)
@@ -93,7 +98,9 @@ object Main extends ServerApp {
     in.split("\n").toList.map { line =>
       if (line.contains("_index")) line
       else {
-        line.decodeOption[DocIn].map(langNer(_).asJson.nospaces).get
+        val e = line.decodeEither[DocIn]
+        val in = e.right.getOrElse(throw new Exception(e.left.get))
+        langNer(in).asJson.nospaces
       }
     }.mkString("\n")
   }
@@ -107,9 +114,9 @@ object Main extends ServerApp {
       r.as(jsonOf[DocIn]).flatMap { d => Ok(langNer(d).asJson) }
     case r @ POST -> Root / "langNerMultiLine" =>
       Ok(r.body.map { bv =>
-        val in = bv.decodeUtf8.right.get
-        val out = langNerMultiLine(in)
-        out
+        val e = bv.decodeUtf8
+        val in = e.right.getOrElse(throw new Exception(e.left.get))
+        langNerMultiLine(in)
       })
   })
 
