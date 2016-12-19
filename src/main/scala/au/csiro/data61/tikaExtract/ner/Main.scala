@@ -94,6 +94,8 @@ object Main extends ServerApp {
     DocOut(d.content, meta, d.path, ner, embedded)
   }
   
+  def langNerMulti(d: List[DocIn]): List[DocOut] = d.map(langNer)
+  
   def langNerMultiLine(in: String): String = {
     in.split("\n").toList.map { line =>
       if (line.contains("_index")) line
@@ -112,6 +114,8 @@ object Main extends ServerApp {
       r.as(jsonOf[Text]).flatMap { t => Ok(CoreNLP.ner(t.text).asJson) }
     case r @ POST -> Root / "langNer" =>
       r.as(jsonOf[DocIn]).flatMap { d => Ok(langNer(d).asJson) }
+    case r @ POST -> Root / "langNerMulti" =>
+      r.as(jsonOf[List[DocIn]]).flatMap { d => Ok(langNerMulti(d).asJson) }
     case r @ POST -> Root / "langNerMultiLine" =>
       Ok(r.body.map { bv =>
         val e = bv.decodeUtf8
