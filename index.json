@@ -15,6 +15,16 @@
           "analyzer": "english",
           "index_options": "offsets"
         },
+       "ner" : {
+          "type": "nested",
+          "properties" : {
+            "typ" : { "type" : "text" },
+            "entity" : { "type" : "text" },
+            "sentenceIdx" : { "type" : "integer", "index" : "no" },
+            "wordIdxFirst" : { "type" : "integer", "index" : "no" },
+            "wordIdxLast" : { "type" : "integer", "index" : "no" }
+          }
+        },
         "meta" : {
           "type": "nested",
           "properties" : {
@@ -29,6 +39,16 @@
               "type" : "text",
               "analyzer": "english",
               "index_options": "offsets"
+            },
+           "ner" : {
+              "type": "nested",
+              "properties" : {
+                "typ" : { "type" : "text" },
+                "entity" : { "type" : "text" },
+                "sentenceIdx" : { "type" : "integer", "index" : "no" },
+                "wordIdxFirst" : { "type" : "integer", "index" : "no" },
+                "wordIdxLast" : { "type" : "integer", "index" : "no" }
+              }
             },
             "meta" : {
               "type": "nested",
